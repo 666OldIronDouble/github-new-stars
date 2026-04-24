@@ -2,16 +2,16 @@ import time
 
 from config import TOP_N
 from github_fetcher import fetch_trending_repos, fetch_readme
-from summarizer import check_ollama_available, generate_summary
+from summarizer import create_backend, generate_summary
 from reporter import SummaryEntry, generate_report, save_report
 
 
 def main():
     start_time = time.time()
 
-    print("[1/5] 检查 Ollama 服务...")
-    check_ollama_available()
-    print("  Ollama 服务可用。")
+    print("[1/5] 检测 AI 后端...")
+    backend = create_backend()
+    print(f"  使用后端: {backend.name}")
 
     print(f"[2/5] 获取 GitHub 一周热门项目 (Top {TOP_N})...")
     repos = fetch_trending_repos(top_n=TOP_N)
@@ -27,7 +27,7 @@ def main():
         readme = fetch_readme(repo.name)
         if not readme:
             print(f"  无 README 文件，跳过摘要生成。")
-        summary = generate_summary(repo, readme)
+        summary = generate_summary(repo, readme, backend)
         elapsed = time.time() - t0
         if summary.startswith("（"):
             print(f"  摘要生成失败 ({elapsed:.1f}s): {summary}")
